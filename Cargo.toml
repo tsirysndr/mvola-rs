@@ -1,0 +1,12 @@
+[package]
+name = "mvola"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+surf = "2.3.2"
+serde = "1.0.136"
+serde_json = "1.0.79"
+tokio = { version = "1.12.0", features = ["full"] }
