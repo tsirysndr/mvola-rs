@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+pub trait Service {
+  fn set_authorization(&mut self, token: &str);
+  fn set_options(&mut self, options: Options);
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AuthResponse {
   pub access_token: String,
   pub token_type: String,
@@ -27,14 +32,14 @@ pub struct TransactionRequest {
   pub original_transaction_reference: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionResponse {
   pub status: String,
   pub server_correlation_id: String,
   pub notification_method: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionDetails {
   pub amount: u64,
   pub currency: String,
@@ -48,7 +53,7 @@ pub struct TransactionDetails {
   pub fees: Vec<Fee>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionStatus {
   pub status: String,
   pub server_correlation_id: String,
@@ -66,13 +71,13 @@ pub struct Options {
   pub callback_url: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct KeyValue {
   pub key: String,
   pub value: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Fee {
   pub fee_amount: u16,
 }

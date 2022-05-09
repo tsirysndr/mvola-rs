@@ -16,14 +16,9 @@ pub struct MVola {
 
 impl MVola {
     pub fn new(base_url: &str) -> Self {
-        let client = Config::new()
-            .set_base_url(Url::parse(base_url).unwrap())
-            .set_timeout(Some(Duration::from_secs(5)))
-            .try_into()
-            .unwrap();
         Self {
-            auth: auth::AuthService::new(&client),
-            transaction: transaction::TransactionService::new(&client),
+            auth: auth::AuthService::new(base_url),
+            transaction: transaction::TransactionService::new(base_url),
         }
     }
 }

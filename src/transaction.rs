@@ -1,20 +1,61 @@
 use crate::types::{
-  TransactionDetails, TransactionRequest, TransactionResponse, TransactionStatus,
+  Options, Service, TransactionDetails, TransactionRequest, TransactionResponse, TransactionStatus,
 };
-use surf::{Body, Client};
+use std::time::Duration;
+use surf::http::auth::{AuthenticationScheme, Authorization};
+use surf::http::{Method, Mime};
+use surf::{Body, Client, Config, Url};
 
 pub struct TransactionService {
   client: Client,
+  base_url: String,
+  authorization: Option<Authorization>,
+  options: Options,
+}
+
+impl Service for TransactionService {
+  fn set_authorization(&mut self, token: &str) {
+    self.authorization = Some(Authorization::new(
+      AuthenticationScheme::Bearer,
+      String::from(token),
+    ));
+  }
+
+  fn set_options(&mut self, options: Options) {
+    self.options = options;
+  }
 }
 
 impl TransactionService {
-  pub fn new(client: &Client) -> Self {
+  pub fn new(base_url: &str) -> Self {
+    let client = Config::new()
+      .set_timeout(Some(Duration::from_secs(5)))
+      .try_into()
+      .unwrap();
+    let options = Options {
+      version: String::from("1.0"),
+      correlation_id: String::from(""),
+      user_language: String::from("FR"),
+      user_account_identifier: String::from(""),
+      partner_name: String::from(""),
+      callback_url: None,
+    };
     Self {
-      client: client.clone(),
+      client,
+      base_url: String::from(base_url),
+      authorization: None,
+      options,
     }
   }
 
   pub async fn get_transaction(&self, id: &str) -> Result<TransactionDetails, surf::Error> {
+    let path = format!(
+      "{}/mvola/mm/transactions/type/merchantpay/1.0.0/{}",
+      self.base_url, id
+    );
+    let url = Url::parse(&path).unwrap();
+    let mut req = surf::Request::new(Method::Get, url.clone());
+
     let res = self
       .client
       .get(format!(
