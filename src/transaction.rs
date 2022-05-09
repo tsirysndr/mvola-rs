@@ -1,10 +1,12 @@
 use crate::types::{
   Options, Service, TransactionDetails, TransactionRequest, TransactionResponse, TransactionStatus,
 };
+use std::str::FromStr;
+
 use std::time::Duration;
 use surf::http::auth::{AuthenticationScheme, Authorization};
 use surf::http::{Method, Mime};
-use surf::{Body, Client, Config, Url};
+use surf::{Client, Config, Url};
 
 pub struct TransactionService {
   client: Client,
@@ -35,9 +37,9 @@ impl TransactionService {
     let options = Options {
       version: String::from("1.0"),
       correlation_id: String::from(""),
-      user_language: String::from("FR"),
+      user_language: None,
       user_account_identifier: String::from(""),
-      partner_name: String::from(""),
+      partner_name: None,
       callback_url: None,
     };
     Self {
@@ -48,6 +50,40 @@ impl TransactionService {
     }
   }
 
+  /// Get the details of a transaction
+  /// # Arguments
+  /// * `id` - The id of the transaction
+  /// # Returns
+  /// * `TransactionDetails` - The details of the transaction
+  /// # Errors
+  /// * `surf::Error` - If the request fails
+  /// # Example
+  /// ```no_run
+  /// #[tokio::main]
+  /// async fn main() {
+  ///  let mut client = MVola::new(SANDBOX_URL);
+  ///  let auth = client
+  ///    .auth
+  ///    .generate_token(
+  ///      &env::var("CONSUMER_KEY").unwrap(),
+  ///      &env::var("CONSUMER_SECRET").unwrap(),
+  ///    )
+  ///    .await;
+  ///  client
+  ///    .transaction
+  ///    .set_authorization(&auth.unwrap().access_token);
+  ///  client.transaction.set_options(Options {
+  ///    version: String::from("1.0"),
+  ///    correlation_id: Uuid::new_v4().to_string(),
+  ///    user_language: None,
+  ///    user_account_identifier: String::from("msisdn;0343500003"),
+  ///    partner_name: None,
+  ///    callback_url: None,
+  ///  });
+  ///  let response = client.transaction.get_transaction("636042511").await;
+  ///  println!("{:#?}", response);
+  ///}
+  /// ```
   pub async fn get_transaction(&self, id: &str) -> Result<TransactionDetails, surf::Error> {
     let path = format!(
       "{}/mvola/mm/transactions/type/merchantpay/1.0.0/{}",
@@ -55,43 +91,208 @@ impl TransactionService {
     );
     let url = Url::parse(&path).unwrap();
     let mut req = surf::Request::new(Method::Get, url.clone());
+    req.set_header(
+      "Authorization",
+      self.authorization.as_ref().unwrap().value(),
+    );
+    req.set_header("Accept", "application/json");
+    req.set_header("Version", self.options.version.as_str());
+    req.set_header("X-CorrelationID", self.options.correlation_id.as_str());
+    req.set_header("Cache-Control", "no-cache");
+    req.set_header(
+      "UserAccountIdentifier",
+      self.options.user_account_identifier.as_str(),
+    );
 
-    let res = self
-      .client
-      .get(format!(
-        "/mvola/mm/transactions/type/merchantpay/1.0.0/{}",
-        id
-      ))
-      .recv_json::<TransactionDetails>()
-      .await?;
+    let res = self.client.recv_json(req).await?;
     Ok(res)
   }
+
+  /// Get the status of a transaction
+  /// # Arguments
+  /// * `server_correlation_id` - ID from client to uniquely identify the request in client side.
+  ///
+  /// # Returns
+  /// * `TransactionStatus` - The object containing the status of the transaction
+  /// # Errors
+  /// * `surf::Error` - If the request fails
+  /// # Example
+  /// ```no_run
+  /// #[tokio::main]
+  /// async fn main() {
+  ///  let mut client = MVola::new(SANDBOX_URL);
+  ///  let auth = client
+  ///    .auth
+  ///    .generate_token(
+  ///      &env::var("CONSUMER_KEY").unwrap(),
+  ///      &env::var("CONSUMER_SECRET").unwrap(),
+  ///    )
+  ///    .await;
+  ///  client
+  ///    .transaction
+  ///    .set_authorization(&auth.unwrap().access_token);
+  ///  client.transaction.set_options(Options {
+  ///    version: String::from("1.0"),
+  ///    correlation_id: Uuid::new_v4().to_string(),
+  ///    user_language: Some("FR".to_string()),
+  ///    user_account_identifier: String::from("msisdn;0343500003"),
+  ///    partner_name: Some("TestMVola".to_string()),
+  ///    callback_url: None,
+  ///  });
+  ///  let response = client
+  ///    .transaction
+  ///    .get_transaction_status("2ba1d66a-25cf-4c12-8a6f-4cb01255148e")
+  ///    .await;
+  ///  println!("{:#?}", response);
+  /// }
+  /// ```
 
   pub async fn get_transaction_status(
     &self,
     server_correlation_id: &str,
   ) -> Result<TransactionStatus, surf::Error> {
-    let res = self
-      .client
-      .get(format!(
-        "/mvola/mm/transactions/type/merchantpay/1.0.0/status/{}",
-        server_correlation_id
-      ))
-      .recv_json::<TransactionStatus>()
-      .await?;
+    let path = format!(
+      "{}/mvola/mm/transactions/type/merchantpay/1.0.0/status/{}",
+      self.base_url, server_correlation_id
+    );
+    let url = Url::parse(&path).unwrap();
+    let mut req = surf::Request::new(Method::Get, url.clone());
+    req.set_header(
+      "Authorization",
+      self.authorization.as_ref().unwrap().value(),
+    );
+    req.set_header("Version", self.options.version.as_str());
+    req.set_header("X-CorrelationID", self.options.correlation_id.as_str());
+    req.set_header(
+      "UserLanguage",
+      self.options.user_language.as_ref().unwrap().as_str(),
+    );
+    req.set_header(
+      "PartnerName",
+      self.options.partner_name.as_ref().unwrap().as_str(),
+    );
+    req.set_header("Cache-Control", "no-cache");
+    req.set_header(
+      "UserAccountIdentifier",
+      self.options.user_account_identifier.as_str(),
+    );
+
+    let res: TransactionStatus = self.client.recv_json(req).await?;
     Ok(res)
   }
 
+  /// Send a transaction
+  /// # Arguments
+  /// * `tx` - The transaction to send
+  /// # Returns
+  /// * `TransactionResponse` - The response of the transaction
+  /// # Errors
+  /// * `surf::Error` - If the request fails
+  /// # Example
+  /// ```no_run
+  /// #[tokio::main]
+  /// async fn main() {
+  ///  let mut client = MVola::new(SANDBOX_URL);
+  ///  let auth = client
+  ///    .auth
+  ///    .generate_token(
+  ///      &env::var("CONSUMER_KEY").unwrap(),
+  ///      &env::var("CONSUMER_SECRET").unwrap(),
+  ///    )
+  ///    .await;
+  ///  client
+  ///    .transaction
+  ///    .set_authorization(&auth.unwrap().access_token);
+  ///  client.transaction.set_options(Options {
+  ///    version: String::from("1.0"),
+  ///    correlation_id: Uuid::new_v4().to_string(),
+  ///    user_language: Some("FR".to_string()),
+  ///    user_account_identifier: String::from("msisdn;0343500003"),
+  ///    partner_name: Some("TestMVola".to_string()),
+  ///    callback_url: None,
+  ///  });
+  ///  let transaction_ref = Uuid::new_v4();
+  ///
+  ///  let now = SystemTime::now();
+  ///  let now: DateTime<Utc> = now.into();
+  ///  let now = now.to_rfc3339_opts(SecondsFormat::Millis, true);
+  ///
+  ///  let tx: TransactionRequest = TransactionRequest {
+  ///    amount: String::from("1000"),
+  ///    currency: String::from("Ar"),
+  ///    description_text: String::from("test"),
+  ///    request_date: now.to_string(),
+  ///    debit_party: vec![KeyValue {
+  ///      key: String::from("msisdn"),
+  ///      value: String::from("0343500003"),
+  ///    }],
+  ///    credit_party: vec![KeyValue {
+  ///      key: String::from("msisdn"),
+  ///      value: String::from("0343500004"),
+  ///    }],
+  ///    metadata: vec![
+  ///      KeyValue {
+  ///        key: String::from("partnerName"),
+  ///        value: String::from("TestMVola"),
+  ///      },
+  ///      KeyValue {
+  ///        key: String::from("fc"),
+  ///        value: String::from("USD"),
+  ///      },
+  ///      KeyValue {
+  ///        key: String::from("amountFc"),
+  ///        value: String::from("1"),
+  ///      },
+  ///    ],
+  ///
+  ///    requesting_organisation_transaction_reference: transaction_ref.to_string(),
+  ///    original_transaction_reference: transaction_ref.to_string(),
+  ///  };
+  ///  let response = client.transaction.send_payment(tx).await;
+  ///  println!("{:#?}", response);
+  /// }
+  /// ```
   pub async fn send_payment(
     &self,
-    tx: &TransactionRequest,
+    tx: TransactionRequest,
   ) -> Result<TransactionResponse, surf::Error> {
-    let res = self
-      .client
-      .post("/mvola/mm/transactions/type/merchantpay/1.0.0/")
-      .body(Body::from_json(&tx)?)
-      .recv_json::<TransactionResponse>()
-      .await?;
+    let path = format!(
+      "{}/mvola/mm/transactions/type/merchantpay/1.0.0/",
+      self.base_url
+    );
+    let url = Url::parse(&path).unwrap();
+    let mut req = surf::Request::new(Method::Post, url.clone());
+    req.set_header(
+      "Authorization",
+      self.authorization.as_ref().unwrap().value(),
+    );
+    req.set_header("Accept", "application/json");
+    req.set_header("Version", self.options.version.as_str());
+    req.set_header("X-CorrelationID", self.options.correlation_id.as_str());
+    req.set_header(
+      "UserLanguage",
+      self.options.user_language.as_ref().unwrap().as_str(),
+    );
+    req.set_header(
+      "PartnerName",
+      self.options.partner_name.as_ref().unwrap().as_str(),
+    );
+    req.set_header("Cache-Control", "no-cache");
+    req.set_header(
+      "UserAccountIdentifier",
+      self.options.user_account_identifier.as_str(),
+    );
+
+    if self.options.callback_url != None {
+      req.set_header(
+        "X-Callback-URL",
+        self.options.callback_url.as_ref().unwrap(),
+      );
+    }
+
+    req.set_content_type(Mime::from_str("application/json").unwrap());
+    req.body_json(&tx).unwrap();
+    let res: TransactionResponse = self.client.recv_json(req).await?;
     Ok(res)
   }
 }

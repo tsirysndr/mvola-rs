@@ -22,6 +22,35 @@ impl AuthService {
     }
   }
 
+  /// Generate a token for the given consumer key and consumer secret.
+  ///
+  /// The token is valid for one hour.
+  ///
+  /// The token is then used to set the authorization header for the next request.
+  ///
+  /// # Arguments
+  /// * `consumer_key` - The consumer key
+  /// * `consumer_secret` - The consumer secret
+  /// # Returns
+  /// * `AuthResponse` - The object containing the access token
+  /// # Errors
+  /// * `surf::Error` - If the request fails
+  /// # Example
+  /// ```no_run
+  ///#[tokio::main]
+  /// async fn main() {
+  /// let client = MVola::new(SANDBOX_URL);
+  /// let response = client
+  ///  .auth
+  /// .generate_token(
+  ///   &env::var("CONSUMER_KEY").unwrap(),
+  ///   &env::var("CONSUMER_SECRET").unwrap(),
+  /// )
+  // .await;
+  ///
+  ///  println!("{:#?}", response);
+  ///}
+  /// ```
   pub async fn generate_token(
     &self,
     consumer_key: &str,

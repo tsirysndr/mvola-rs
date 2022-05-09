@@ -20,8 +20,9 @@ pub struct AuthRequest {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TransactionRequest {
-  pub amount: u64,
+  pub amount: String,
   pub currency: String,
   pub description_text: String,
   pub request_date: String,
@@ -33,6 +34,7 @@ pub struct TransactionRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct TransactionResponse {
   pub status: String,
   pub server_correlation_id: String,
@@ -40,8 +42,9 @@ pub struct TransactionResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct TransactionDetails {
-  pub amount: u64,
+  pub amount: String,
   pub currency: String,
   pub transaction_reference: String,
   pub transaction_status: String,
@@ -54,6 +57,7 @@ pub struct TransactionDetails {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct TransactionStatus {
   pub status: String,
   pub server_correlation_id: String,
@@ -65,9 +69,9 @@ pub struct TransactionStatus {
 pub struct Options {
   pub version: String,
   pub correlation_id: String,
-  pub user_language: String,
+  pub user_language: Option<String>,
   pub user_account_identifier: String,
-  pub partner_name: String,
+  pub partner_name: Option<String>,
   pub callback_url: Option<String>,
 }
 
@@ -78,6 +82,7 @@ pub struct KeyValue {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Fee {
-  pub fee_amount: u16,
+  pub fee_amount: String,
 }

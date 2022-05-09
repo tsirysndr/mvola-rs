@@ -21,6 +21,7 @@ path = "examples/transaction_status.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.19"
 surf = "2.3.2"
 serde = "1.0.136"
 serde_json = "1.0.79"
