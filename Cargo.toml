@@ -2,6 +2,10 @@
 name = "mvola"
 version = "0.1.0"
 edition = "2021"
+description = "Rust library for the MVola API"
+readme = "README.md"
+repository = "https://github.com/tsirysndr/mvola-rs"
+license = "MIT"
 
 [[example]]
 name = "generate_token"
