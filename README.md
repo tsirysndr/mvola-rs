@@ -1,7 +1,7 @@
 <h1>mvola-rs</h1>
 <p>
-  <a href="https://travis-ci.org/tsirysndr/mvola-rs" target="_blank">
-    <img src="https://travis-ci.org/tsirysndr/mvola-rs.svg?branch=master" />
+  <a href="https://app.travis-ci.com/github/tsirysndr/mvola-rs" target="_blank">
+    <img src="https://app.travis-ci.com/tsirysndr/mvola-rs.svg?branch=master" />
   </a>
   <a href="https://codecov.io/gh/tsirysndr/mvola-rs" target="_blank">
     <img src="https://codecov.io/gh/tsirysndr/mvola-rs/branch/master/graph/badge.svg?token=" />
