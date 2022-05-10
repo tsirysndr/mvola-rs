@@ -74,3 +74,36 @@ impl AuthService {
     Ok(res)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use crate::auth::AuthService;
+  use mockito::{mock, SERVER_URL};
+
+  #[tokio::test]
+  async fn test_generate_token() {
+    let _m = mock("POST", "/token")
+      .with_status(200)
+      .with_header("Content-Type", "application/json")
+      .with_body(
+        r#"{
+            "access_token": "access_token",
+            "expires_in": 3600,
+            "token_type": "Bearer",
+            "scope": "EXT_INT_MVOLA_SCOPE"
+        }"#,
+      )
+      .create();
+
+    let client = AuthService::new(SERVER_URL);
+    let response = client
+      .generate_token("consumer_key", "consumer_secret")
+      .await
+      .unwrap();
+
+    assert_eq!(response.access_token, "access_token");
+    assert_eq!(response.expires_in, 3600);
+    assert_eq!(response.token_type, "Bearer");
+    assert_eq!(response.scope, "EXT_INT_MVOLA_SCOPE");
+  }
+}

@@ -1,7 +1,3 @@
-use std::time::Duration;
-use surf::http::auth::{AuthenticationScheme, Authorization};
-use surf::{Client, Config, Url};
-
 pub mod auth;
 pub mod transaction;
 pub mod types;
@@ -20,14 +16,5 @@ impl MVola {
             auth: auth::AuthService::new(base_url),
             transaction: transaction::TransactionService::new(base_url),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
     }
 }

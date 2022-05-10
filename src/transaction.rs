@@ -296,3 +296,148 @@ impl TransactionService {
     Ok(res)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use crate::transaction::TransactionService;
+  use crate::types::KeyValue;
+  use crate::types::Options;
+  use crate::types::Service;
+  use crate::types::TransactionRequest;
+  use chrono::{DateTime, SecondsFormat, Utc};
+  use mockito::{mock, SERVER_URL};
+  use std::time::SystemTime;
+  use uuid::Uuid;
+
+  #[tokio::test]
+  async fn test_send_payment() {
+    let _m = mock("POST", "/mvola/mm/transactions/type/merchantpay/1.0.0/")
+      .with_status(200)
+      .with_header("Content-Type", "application/json")
+      .with_body_from_file("tests/fixtures/transaction_response.json")
+      .create();
+
+    let transaction_ref = Uuid::new_v4();
+
+    let now = SystemTime::now();
+    let now: DateTime<Utc> = now.into();
+    let now = now.to_rfc3339_opts(SecondsFormat::Millis, true);
+
+    let tx: TransactionRequest = TransactionRequest {
+      amount: String::from("1000"),
+      currency: String::from("Ar"),
+      description_text: String::from("test"),
+      request_date: now.to_string(),
+      debit_party: vec![KeyValue {
+        key: String::from("msisdn"),
+        value: String::from("0343500003"),
+      }],
+      credit_party: vec![KeyValue {
+        key: String::from("msisdn"),
+        value: String::from("0343500004"),
+      }],
+      metadata: vec![
+        KeyValue {
+          key: String::from("partnerName"),
+          value: String::from("TestMVola"),
+        },
+        KeyValue {
+          key: String::from("fc"),
+          value: String::from("USD"),
+        },
+        KeyValue {
+          key: String::from("amountFc"),
+          value: String::from("1"),
+        },
+      ],
+
+      requesting_organisation_transaction_reference: transaction_ref.to_string(),
+      original_transaction_reference: transaction_ref.to_string(),
+    };
+    let mut client = TransactionService::new(SERVER_URL);
+
+    client.set_authorization("access token");
+    client.set_options(Options {
+      version: String::from("1.0"),
+      correlation_id: Uuid::new_v4().to_string(),
+      user_language: Some("FR".to_string()),
+      user_account_identifier: String::from("msisdn;0343500003"),
+      partner_name: Some("TestMVola".to_string()),
+      callback_url: None,
+    });
+
+    let response = client.send_payment(tx).await.unwrap();
+    assert_eq!(response.status, "pending");
+    assert_eq!(
+      response.server_correlation_id,
+      "a6b5569b-6181-4fc9-bee3-b9f928dd7ae3"
+    );
+    assert_eq!(response.notification_method, "polling");
+  }
+
+  #[tokio::test]
+  async fn test_get_status() {
+    let _m = mock(
+      "GET",
+      "/mvola/mm/transactions/type/merchantpay/1.0.0/status/05AB2C4F-E0E6-42AD-8FA4-9807BDF348BE",
+    )
+    .with_status(200)
+    .with_header("Content-Type", "application/json")
+    .with_body_from_file("tests/fixtures/transaction_status.json")
+    .create();
+
+    let mut client = TransactionService::new(SERVER_URL);
+
+    client.set_authorization("access token");
+    client.set_options(Options {
+      version: String::from("1.0"),
+      correlation_id: Uuid::new_v4().to_string(),
+      user_language: Some("FR".to_string()),
+      user_account_identifier: String::from("msisdn;0343500003"),
+      partner_name: Some("TestMVola".to_string()),
+      callback_url: None,
+    });
+
+    let response = client
+      .get_transaction_status("05AB2C4F-E0E6-42AD-8FA4-9807BDF348BE")
+      .await
+      .unwrap();
+
+    assert_eq!(response.status, "completed");
+    assert_eq!(
+      response.server_correlation_id,
+      "2ba1d66a-25cf-4c12-8a6f-4cb01255148e"
+    );
+  }
+
+  #[tokio::test]
+  async fn test_get_transaction() {
+    let _m = mock(
+      "GET",
+      "/mvola/mm/transactions/type/merchantpay/1.0.0/3A5C5E20-B2D9-449F-BBD6-2367A684E9C4",
+    )
+    .with_status(200)
+    .with_header("Content-Type", "application/json")
+    .with_body_from_file("tests/fixtures/transaction_details.json")
+    .create();
+
+    let mut client = TransactionService::new(SERVER_URL);
+
+    client.set_authorization("access token");
+    client.set_options(Options {
+      version: String::from("1.0"),
+      correlation_id: Uuid::new_v4().to_string(),
+      user_language: None,
+      user_account_identifier: String::from("msisdn;0343500003"),
+      partner_name: None,
+      callback_url: None,
+    });
+
+    let response = client
+      .get_transaction("3A5C5E20-B2D9-449F-BBD6-2367A684E9C4")
+      .await
+      .unwrap();
+
+    assert_eq!(response.amount, "10000.00");
+  }
+}

@@ -1,5 +1,11 @@
 <h1>mvola-rs</h1>
 <p>
+  <a href="https://travis-ci.org/tsirysndr/mvola-rs" target="_blank">
+    <img src="https://travis-ci.org/tsirysndr/mvola-rs.svg?branch=master" />
+  </a>
+  <a href="https://codecov.io/gh/tsirysndr/mvola-rs" target="_blank">
+    <img src="https://codecov.io/gh/tsirysndr/mvola-rs/branch/master/graph/badge.svg?token=" />
+  </a>
   <a href="LICENSE" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg" />
   </a>
@@ -95,6 +101,12 @@ async fn main() {
   println!("{:#?}", response);
 }
 
+```
+
+### Test
+
+```sh 
+cargo test
 ```
 
 ## Author
