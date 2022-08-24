@@ -20,7 +20,9 @@
 [MVola](https://www.mvola.mg/devportal) Rust client library.
 
 ## Install
+
 Add the following line to your `Cargo.toml` file:
+
 ```toml
 [dependencies]
 mvola = "0.1"
@@ -113,8 +115,8 @@ cargo test
 
 👤 **Tsiry Sandratraina <tsiry.sndr@aol.com>**
 
-* Twitter: [@tsiry_sndr](https://twitter.com/tsiry_sndr)
-* Github: [@tsirysndr](https://github.com/tsirysndr)
+- Twitter: [@tsiry_sndr](https://twitter.com/tsiry_sndr)
+- Github: [@tsirysndr](https://github.com/tsirysndr)
 
 ## Show your support
 

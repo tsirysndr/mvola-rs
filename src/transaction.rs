@@ -207,7 +207,7 @@ impl TransactionService {
   ///    version: String::from("1.0"),
   ///    correlation_id: Uuid::new_v4().to_string(),
   ///    user_language: Some("FR".to_string()),
-  ///    user_account_identifier: String::from("msisdn;0343500003"),
+  ///    user_account_identifier: String::from("msisdn;0343500004"),
   ///    partner_name: Some("TestMVola".to_string()),
   ///    callback_url: None,
   ///  });
