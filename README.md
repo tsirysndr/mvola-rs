@@ -12,6 +12,11 @@
   <a href="https://crates.io/crates/mvola" target="_blank">
     <img src="https://img.shields.io/crates/v/mvola.svg" />
   </a>
+  
+  <a href="https://crates.io/crates/mvola" target="_blank">
+    <img src="https://img.shields.io/crates/dr/mvola" />
+  </a>
+  
   <a href="https://docs.rs/mvola" target="_blank">
     <img src="https://docs.rs/mvola/badge.svg" />
   </a>
