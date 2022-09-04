@@ -20,6 +20,10 @@
   <a href="https://docs.rs/mvola" target="_blank">
     <img src="https://docs.rs/mvola/badge.svg" />
   </a>
+  
+  <a href="https://github.com/tsirysndr/mvola-rs/actions/workflows/rust-clippy.yml" target="_blank">
+    <img alt="release" src="https://github.com/tsirysndr/mvola-rs/actions/workflows/rust-clippy.yml/badge.svg?branch=master" />
+  </a>
 </p>
 
 [MVola](https://www.mvola.mg/devportal) Rust client library.
