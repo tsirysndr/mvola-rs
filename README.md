@@ -26,6 +26,8 @@
   </a>
 </p>
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S1ETN14)
+
 [MVola](https://www.mvola.mg/devportal) Rust client library.
 
 ## Install
